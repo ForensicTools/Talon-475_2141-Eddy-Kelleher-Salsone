@@ -100,9 +100,9 @@ def main():
 		exit(0)
 	
 	methodIndex =  {'exit':exit,
-					'help':printHelp,
-					'print':printTweets
-				   }
+			'help':printHelp,
+			'print':printTweets
+		       }
 	
 	global api, timeline	
 	api = setup()
