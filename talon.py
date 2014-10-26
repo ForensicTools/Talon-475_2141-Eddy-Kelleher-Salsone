@@ -17,6 +17,7 @@ def setup():
 	try:
 		auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 		auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+		global api
 		api = tweepy.API(auth)
 		print "[+] Successfully authenticated!"
 		return tweepy.API(auth)
@@ -39,6 +40,7 @@ def getTimeline(api, username, count=20):
 	"""
 	print "[+] Retrieving timeline of @%s..."%username
 	try:
+		global timeline
 		timeline = api.user_timeline(screen_name=username, count=count)
 		print "[+] %s tweet(s) found"%len(timeline)
 		return timeline
@@ -51,9 +53,6 @@ def getTimeline(api, username, count=20):
 def printTweets():
 	"""
 	Prints info on statuses from user's timeline
-	
-	Arguments:
-		timeline	user timeline object
 	"""
 
 	for status in timeline:
@@ -64,6 +63,31 @@ def printTweets():
 		print "[+] Sent from: "+xstr(status.source)
 		print "[+] URL:       http://twitter.com/"+status.user.screen_name+"/status/"+str(status.id)
 	return
+
+def userInfo():
+	"""
+	Prints info on target account
+	"""
+	try:
+		print "[+] Name: "+str(timeline[0].user.name)
+		print "[+] Handle: "+str(timeline[0].user.screen_name)
+		print "[+] About: "+xstr(timeline[0].user.url)
+		print "[+] Location: "+xstr(timeline[0].user.location)
+	except:
+		print "[-] Error getting account info"
+
+def changeUser():
+	"""
+	Changes target account
+	"""
+	try:
+		user = ""
+		user = raw_input("Enter new username: @")
+		count = raw_input("Enter count: ")
+		timeline = getTimeline(api, user, count)
+	except Exception, e:
+		print "[-] Unable to change user account"
+		print e
 	
 def printHelp():
 	"""
@@ -71,6 +95,7 @@ def printHelp():
 	"""	
 	print "Command         Description"
 	print "-" * 27
+	print "change..........Change target user"
 	print "exit............Exit"
 	print "help............Print help"
 	print "html............Download timeline to html file"		#toBeImplemented
@@ -78,6 +103,7 @@ def printHelp():
 	print "new.............Change target account"				#toBeImplemented?
 	print "print...........Print user's tweets"
 	print "search..........Search user's tweets interactively"	#toBeImplemented
+	print "user............Print account info"
 	print "zip.............Download and zip timeline"			#toBeImplemented
 
 def xstr(s):
@@ -93,20 +119,22 @@ def main():
 	parser = OptionParser(usage="usage: %prog -u <username>", version="%prog 1.0")
 	parser.add_option("-u", "--username", dest="username", help="Twitter username of target account")
 	parser.add_option("-c", "--count", dest="count", help="Number of tweets to retrieve (default of 20)")
+	global options, args
 	(options, args) = parser.parse_args()
 	
 	if not options.username:
 		parser.print_help()
 		exit(0)
 	
-	methodIndex =  {'exit':exit,
-			'help':printHelp,
-			'print':printTweets
+	methodIndex =  {'change':changeUser,
+					'exit':exit,
+					'help':printHelp,
+					'print':printTweets,
+					'user':userInfo
 		       }
 	
-	global api, timeline	
-	api = setup()
-	timeline = getTimeline(api, options.username, options.count)
+	setup()
+	getTimeline(api, options.username, options.count)
 	
 	while True:
 		command = raw_input(">>> ")
