@@ -88,7 +88,20 @@ def changeUser():
 	except Exception, e:
 		print "[-] Unable to change user account"
 		print e
-	
+		
+def getWordList(wordlist):
+	"""
+	Will check the currently gathered timeline and match it against the given wordlist
+	"""
+
+	for status in timeline:
+		wfile = open(wordlist, 'r')
+
+		for word in wfile:
+			if word in status.text:
+				print status.text
+				print "^ yay it worked ^"
+		
 def printHelp():
 	"""
 	Prints help menu
@@ -119,6 +132,7 @@ def main():
 	parser = OptionParser(usage="usage: %prog -u <username>", version="%prog 1.0")
 	parser.add_option("-u", "--username", dest="username", help="Twitter username of target account")
 	parser.add_option("-c", "--count", dest="count", help="Number of tweets to retrieve (default of 20)")
+	parser.add_option("-w", "--wordlist", dest="wordlist", help="Wordlist used to check against")
 	global options, args
 	(options, args) = parser.parse_args()
 	
@@ -135,6 +149,9 @@ def main():
 	
 	setup()
 	getTimeline(api, options.username, options.count)
+	
+	if options.wordlist:
+		getWordList(options.wordlist)
 	
 	while True:
 		command = raw_input(">>> ")
